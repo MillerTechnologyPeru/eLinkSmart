@@ -184,7 +184,8 @@ private extension ELinkSmartConnection {
         let frames = ELinkSmartFraming.write(cipher.encrypt(packet.plaintext))
         let fragments = try await collect(timeout: timeout) {
             for frame in frames {
-                try await central.writeValue(Central.Data(frame), for: characteristic, withResponse: true)
+                // DATAIN (0x2ADD) is Write Without Response on real hardware (props 0x04)
+                try await central.writeValue(Central.Data(frame), for: characteristic, withResponse: false)
             }
         }
         guard let ciphertext = ELinkSmartFraming.reassemble(fragments),
