@@ -1,0 +1,33 @@
+{
+  "originHash" : "cee4fe97113fd6eee56f9077cf4f169a5b166c0149b8ff4aaea6ec412aaaada9",
+  "pins" : [
+    {
+      "identity" : "bluetooth",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/PureSwift/Bluetooth.git",
+      "state" : {
+        "revision" : "6da67877eefa4541e7d18cf7a331d2455c8f06c8",
+        "version" : "8.2.0"
+      }
+    },
+    {
+      "identity" : "gatt",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/PureSwift/GATT.git",
+      "state" : {
+        "revision" : "015fa2e3ff7f1ec6aa1bb8187fd110794a4d03f6",
+        "version" : "4.1.0"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
+        "version" : "603.0.2"
+      }
+    }
+  ],
+  "version" : 3
+}
