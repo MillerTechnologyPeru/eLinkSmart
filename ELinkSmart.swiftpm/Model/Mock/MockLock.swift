@@ -131,10 +131,13 @@ public struct MockLockState {
             let response = ELinkSmartPacket(command: .login, parameters: parameters)
             return ELinkSmartFraming.notifications(cipher.encrypt(response.plaintext))
         case .unlock, .unlockAlternate:
-            guard packet.parameters.count >= 14,
-                  Array(packet.parameters[0 ..< 4]) == challenge,
+            guard let challenge, packet.parameters.count >= 14 else {
+                return []
+            }
+            let proof = Array(cipher.encrypt(challenge).prefix(4))
+            guard Array(packet.parameters[0 ..< 4]) == proof,
                   Array(packet.parameters[8 ..< 14]) == Array(Self.password.utf8) else {
-                return [] // wrong token or password: the lock stays silent
+                return [] // wrong proof or password: the lock stays silent
             }
             let ack = ELinkSmartPacket(command: packet.command, parameters: [0x00, 0x00])
             return ELinkSmartFraming.notifications(cipher.encrypt(ack.plaintext))
