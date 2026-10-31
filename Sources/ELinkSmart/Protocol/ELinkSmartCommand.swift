@@ -14,10 +14,11 @@ public enum ELinkSmartCommand: Equatable, Hashable, Sendable {
     /// Unlock the padlock.
     ///
     /// - Parameters:
-    ///   - token: The session token from the lock's login reply.
+    ///   - proof: The challenge proof — the first four bytes of `AES-ECB(challenge)`, where the challenge
+    ///     is the token from the lock's login reply (see ``ELinkSmartConnection``).
     ///   - password: The six-digit admin password.
     ///   - timestamp: Seconds since the Unix epoch, as sent by the app.
-    case unlock(token: UInt32, password: ELinkSmartPassword, timestamp: UInt32)
+    case unlock(proof: UInt32, password: ELinkSmartPassword, timestamp: UInt32)
 }
 
 public extension ELinkSmartCommand {
@@ -27,8 +28,8 @@ public extension ELinkSmartCommand {
         switch self {
         case let .login(nonce):
             return ELinkSmartPacket(command: .login, parameters: nonce.littleEndianBytes)
-        case let .unlock(token, password, timestamp):
-            let parameters = token.littleEndianBytes + timestamp.littleEndianBytes + password.bytes
+        case let .unlock(proof, password, timestamp):
+            let parameters = proof.littleEndianBytes + timestamp.littleEndianBytes + password.bytes
             return ELinkSmartPacket(command: .unlock, parameters: parameters)
         }
     }
