@@ -63,8 +63,13 @@ Little-endian throughout:
 |----------|---------------------|---------|
 | Login request | `06 00 01 00 <nonce:4>` | len 6, cmd `0x01`; the nonce is a Unix timestamp |
 | Login reply | `46 00 01 00 <token:4> <device info…>` | len 70, cmd `0x01`, 4-byte session token, then model/config |
-| Unlock request | `10 00 12 00 <token:4> <timestamp:4> <password:6>` | len 16, cmd `0x12`; password is 6 ASCII digits |
+| Unlock request | `10 00 12 00 <proof:4> <timestamp:4> <password:6>` | len 16, cmd `0x12`; password is 6 ASCII digits |
 | Acknowledgement | `04 00 <cmd> 00 00 00` | len 4, echoes the command code |
+
+The **proof** is the first four bytes of `AES-ECB(challenge)`, where the challenge is the 4-byte token
+from the login reply, PKCS7-padded to one block before encryption. Every authenticated command (unlock
+and the management commands) carries this proof, not the raw challenge. **Verified** against the capture:
+challenge `FE 12 00 00` → proof `7D 2E BC FB`.
 
 ## BLE framing — Verified
 
@@ -97,9 +102,9 @@ gets **no reply**. After ten wrong passwords the lock locks out logins for ~90 s
 ## Authentication flow — Verified
 
 1. Enable notifications on `0x2ADE` (write `01 00` to its CCCD).
-2. Write **login** (`0x01`). The lock replies with a 4-byte session token (plus device info).
-3. Write **unlock** (`0x12`) with the token, a timestamp, and the six-digit password.
-4. The lock acknowledges by echoing the command. Management commands reuse the same token.
+2. Write **login** (`0x01`). The lock replies with a 4-byte challenge token (plus device info).
+3. Write **unlock** (`0x12`) with the challenge proof, a timestamp, and the six-digit password.
+4. The lock acknowledges by echoing the command. Management commands reuse the same proof.
 
 ## Password — Verified
 
