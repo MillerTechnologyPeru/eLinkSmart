@@ -203,10 +203,13 @@ private final class TestCentral: CentralManager, @unchecked Sendable {
             let response = ELinkSmartPacket(command: .login, parameters: parameters)
             return ELinkSmartFraming.notifications(cipher.encrypt(response.plaintext))
         case .unlock:
-            guard packet.parameters.count >= 14,
-                  Array(packet.parameters[0 ..< 4]) == challenge,
+            guard let challenge, packet.parameters.count >= 14 else {
+                return []
+            }
+            let proof = Array(cipher.encrypt(challenge).prefix(4))
+            guard Array(packet.parameters[0 ..< 4]) == proof,
                   Array(packet.parameters[8 ..< 14]) == Array(pin.utf8) else {
-                return [] // wrong token or password: no reply
+                return [] // wrong proof or password: no reply
             }
             let ack = ELinkSmartPacket(command: .unlock, parameters: [0x00, 0x00])
             return ELinkSmartFraming.notifications(cipher.encrypt(ack.plaintext))
