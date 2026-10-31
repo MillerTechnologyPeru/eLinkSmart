@@ -38,14 +38,4 @@ public extension BluetoothUUID {
     static var elinkSmartDataIn2: BluetoothUUID {
         .bit16(0x2ADF)
     }
-
-    /// Battery service (SIG `0x180F`).
-    static var batteryService: BluetoothUUID {
-        .bit16(0x180F)
-    }
-
-    /// Battery level characteristic (SIG `0x2A19`).
-    static var batteryLevel: BluetoothUUID {
-        .bit16(0x2A19)
-    }
 }
