@@ -90,15 +90,6 @@ public extension Store {
         }
         log("\(peripheral) unlocked")
     }
-
-    /// Reads the lock's battery level.
-    func readBattery(_ peripheral: NativeCentral.Peripheral) async throws -> UInt8 {
-        let level = try await perform(on: peripheral) {
-            try await $0.readBattery()
-        }
-        log("\(peripheral) battery \(level) %")
-        return level
-    }
 }
 
 private extension Store {
