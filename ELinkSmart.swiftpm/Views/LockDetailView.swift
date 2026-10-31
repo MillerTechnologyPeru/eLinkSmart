@@ -20,10 +20,7 @@ struct LockDetailView: View {
     let lock: ELinkSmartLock
 
     @State
-    private var password = "123456"
-
-    @State
-    private var batteryLevel: UInt8?
+    private var password = ""
 
     @State
     private var isBusy = false
@@ -68,11 +65,6 @@ private extension LockDetailView {
                         .foregroundColor(store.isConnected(peripheral) ? .green : .gray)
                 }
             }
-            if let batteryLevel {
-                Text("Battery: \(batteryLevel)%")
-            }
-            Button("Read Battery") { readBattery() }
-                .disabled(isBusy)
             if let status {
                 Text(verbatim: status)
                     .foregroundColor(.green)
@@ -122,12 +114,6 @@ private extension LockDetailView {
         perform {
             try await store.unlock(peripheral, password: password)
             status = "Unlocked"
-        }
-    }
-
-    func readBattery() {
-        perform {
-            batteryLevel = try await store.readBattery(peripheral)
         }
     }
 
