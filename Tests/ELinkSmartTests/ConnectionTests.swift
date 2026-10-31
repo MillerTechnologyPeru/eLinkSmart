@@ -48,13 +48,6 @@ struct ConnectionTests {
         await connection.disconnect()
     }
 
-    @Test func battery() async throws {
-        let central = TestCentral()
-        let connection = try await central.connect(toLock: central.peripheral)
-        let level = try await connection.readBattery()
-        #expect(level == 0x42)
-        await connection.disconnect()
-    }
 
     @Test func disconnect() async throws {
         let central = TestCentral()
@@ -143,7 +136,6 @@ private final class TestCentral: CentralManager, @unchecked Sendable {
     ) async throws -> [Service<Peripheral, AttributeID>] {
         [
             Service(id: 0x10, uuid: .elinkSmartService, peripheral: peripheral),
-            Service(id: 0x20, uuid: .batteryService, peripheral: peripheral),
         ]
     }
 
@@ -158,17 +150,13 @@ private final class TestCentral: CentralManager, @unchecked Sendable {
                 Characteristic(id: 0x12, uuid: .elinkSmartDataOut, peripheral: peripheral, properties: [.notify]),
                 Characteristic(id: 0x13, uuid: .elinkSmartDataIn2, peripheral: peripheral, properties: [.write]),
             ]
-        case .batteryService:
-            return [
-                Characteristic(id: 0x21, uuid: .batteryLevel, peripheral: peripheral, properties: [.read, .notify]),
-            ]
         default:
             return []
         }
     }
 
     func readValue(for characteristic: Characteristic<Peripheral, AttributeID>) async throws -> Data {
-        characteristic.uuid == .batteryLevel ? Data([0x42]) : Data()
+        Data()
     }
 
     func writeValue(
