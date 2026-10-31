@@ -82,10 +82,6 @@ public extension MockService {
     static var elinkSmart: MockService {
         MockService(id: 0x10, uuid: .elinkSmartService, peripheral: .lock)
     }
-
-    static var battery: MockService {
-        MockService(id: 0x20, uuid: .batteryService, peripheral: .lock)
-    }
 }
 
 public extension MockCharacteristic {
@@ -100,10 +96,6 @@ public extension MockCharacteristic {
 
     static var dataIn2: MockCharacteristic {
         MockCharacteristic(id: 0x13, uuid: .elinkSmartDataIn2, peripheral: .lock, properties: [.write])
-    }
-
-    static var batteryLevel: MockCharacteristic {
-        MockCharacteristic(id: 0x21, uuid: .batteryLevel, peripheral: .lock, properties: [.read, .notify])
     }
 }
 
