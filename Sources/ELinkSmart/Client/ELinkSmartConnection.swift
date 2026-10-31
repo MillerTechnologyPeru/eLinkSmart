@@ -85,13 +85,6 @@ public actor ELinkSmartConnection<Central: CentralManager> where Central: Sendab
         }
     }
 
-    /// Reads the battery level, as a percentage, if the lock exposes the battery service.
-    public func readBattery(timeout: TimeInterval = 5) async throws -> UInt8 {
-        try await enqueue {
-            try await self.performReadBattery(timeout: timeout)
-        }
-    }
-
     /// Closes the connection.
     public func disconnect() async {
         guard isConnected else {
@@ -107,9 +100,9 @@ public actor ELinkSmartConnection<Central: CentralManager> where Central: Sendab
 internal extension ELinkSmartConnection {
 
     func setup() async throws {
-        // discover all services and cache the lock and battery characteristics
-        let services = try await central.discoverServices([], for: peripheral)
-        for service in services where service.uuid == .elinkSmartService || service.uuid == .batteryService {
+        // discover the lock service and cache its characteristics
+        let services = try await central.discoverServices([.elinkSmartService], for: peripheral)
+        for service in services where service.uuid == .elinkSmartService {
             let characteristics = try await central.discoverCharacteristics([], for: service)
             for characteristic in characteristics {
                 self.characteristics[characteristic.uuid] = characteristic
@@ -150,18 +143,6 @@ private extension ELinkSmartConnection {
             try await performLogin(timeout: timeout)
         }
         try await performUnlock(password: password, timeout: timeout)
-    }
-
-    func performReadBattery(timeout: TimeInterval) async throws -> UInt8 {
-        let characteristic = try characteristic(.batteryLevel)
-        let central = self.central
-        let data = try await withTimeout(timeout) {
-            try await central.readValue(for: characteristic)
-        }
-        guard let level = [UInt8](data).first else {
-            throw ELinkSmartConnectionError.invalidData(.batteryLevel)
-        }
-        return level
     }
 
     func performUnlock(password: ELinkSmartPassword, timeout: TimeInterval) async throws {
