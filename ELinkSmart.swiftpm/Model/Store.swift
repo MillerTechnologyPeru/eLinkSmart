@@ -85,6 +85,13 @@ public final class Store: ObservableObject {
         }
     }
 
+    /// Scans for the given duration, then stops. Used by App Intents.
+    public func scan(duration: TimeInterval) async throws {
+        try await scan()
+        try await Task.sleep(timeInterval: duration)
+        stopScanning()
+    }
+
     public func stopScanning() {
         scanStream?.stop()
         scanStream = nil
