@@ -35,6 +35,15 @@ struct CaptureTests {
         #expect(packet.parameters == [0x00, 0x00])
     }
 
+    /// Authenticated commands carry a proof, not the raw challenge: the first four bytes of
+    /// AES-ECB(challenge). In the capture a login reply gave challenge `FE 12 00 00` and the unlock that
+    /// followed used proof `7D 2E BC FB`.
+    @Test func challengeProofMatchesCapture() {
+        let challenge = hex("FE 12 00 00")
+        let proof = Array(ELinkSmartCipher.default.encrypt(challenge).prefix(4))
+        #expect(proof == hex("7D 2E BC FB"))
+    }
+
     /// The lock sends replies as `[LE16 length][ciphertext]` in one notification (MTU 512); the
     /// reassembler recovers the ciphertext.
     @Test func capturedNotificationReassembles() {
