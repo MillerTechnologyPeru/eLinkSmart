@@ -5,33 +5,34 @@
 //  Created by Alsey Coleman Miller on 10/30/26.
 //
 
-import XCTest
+import Foundation
+import Testing
 import Bluetooth
 import GATT
 @testable import ELinkSmart
 
-final class AdvertisementTests: XCTestCase {
+struct AdvertisementTests {
 
-    func testDecodeByName() {
+    @Test func decodeByName() {
         let advertisement = TestAdvertisement(localName: "lock-796A")
         let lock = ELinkSmartLock(advertisement)
-        XCTAssertEqual(lock?.name, "lock-796A")
-        XCTAssertEqual(lock?.id, "lock-796A")
+        #expect(lock?.name == "lock-796A")
+        #expect(lock?.id == "lock-796A")
     }
 
-    func testDecodeByService() {
+    @Test func decodeByService() {
         let advertisement = TestAdvertisement(serviceUUIDs: [.elinkSmartAdvertisedService])
-        XCTAssertEqual(ELinkSmartLock(advertisement)?.name, "lock")
+        #expect(ELinkSmartLock(advertisement)?.name == "lock")
     }
 
-    func testIgnoresOther() {
-        XCTAssertNil(ELinkSmartLock(TestAdvertisement(localName: "Govee_H5072")))
-        XCTAssertNil(ELinkSmartLock(TestAdvertisement()))
+    @Test func ignoresOther() {
+        #expect(ELinkSmartLock(TestAdvertisement(localName: "Govee_H5072")) == nil)
+        #expect(ELinkSmartLock(TestAdvertisement()) == nil)
     }
 
-    func testAdvertisedServiceUUID() {
-        XCTAssertEqual(BluetoothUUID.elinkSmartAdvertisedService, .bit16(0xFF30))
-        XCTAssertEqual(BluetoothUUID.elinkSmartService, .bit16(0x1828))
+    @Test func advertisedServiceUUID() {
+        #expect(BluetoothUUID.elinkSmartAdvertisedService == .bit16(0xFF30))
+        #expect(BluetoothUUID.elinkSmartService == .bit16(0x1828))
     }
 }
 
