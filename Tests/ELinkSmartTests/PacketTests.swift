@@ -20,10 +20,10 @@ struct PacketTests {
 
     @Test func unlockRequest() throws {
         let password = try #require(ELinkSmartPassword(rawValue: "123456"))
-        let command = ELinkSmartCommand.unlock(token: 0x11223344, password: password, timestamp: 0x6550F1D3)
+        let command = ELinkSmartCommand.unlock(proof: 0x11223344, password: password, timestamp: 0x6550F1D3)
         let packet = command.packet
         #expect(packet.command == .unlock)
-        // length 16, command 0x0012, token, timestamp, then "123456" in ASCII
+        // length 16, command 0x0012, proof, timestamp, then "123456" in ASCII
         #expect(packet.plaintext == hex("10 00 12 00 44 33 22 11 D3 F1 50 65 31 32 33 34 35 36"))
     }
 
