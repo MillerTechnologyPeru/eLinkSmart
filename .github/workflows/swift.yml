@@ -1,0 +1,62 @@
+name: Swift
+on: [push]
+jobs:
+
+  macos:
+    name: macOS
+    runs-on: macos-26
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Swift
+      run: |
+        curl -fsSLO https://download.swift.org/swiftly/darwin/swiftly.pkg
+        installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+        ~/.swiftly/bin/swiftly init --quiet-shell-followup --skip-install --assume-yes
+        ~/.swiftly/bin/swiftly install 6.4.1 --use --assume-yes
+        echo "$HOME/.swiftly/bin" >> $GITHUB_PATH
+    - name: Swift Version
+      run: swift --version
+    - name: Build (Debug)
+      run: swift build -c debug
+    - name: Build (Release)
+      run: swift build -c release
+    - name: Test (Debug)
+      run: swift test -c debug
+
+  linux:
+    name: Linux
+    strategy:
+      matrix:
+        swift: ["6.4.1"]
+    runs-on: ubuntu-latest
+    container: swift:${{ matrix.swift }}-noble
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Swift Version
+      run: swift --version
+    - name: Build (Debug)
+      run: swift build -c debug
+    - name: Build (Release)
+      run: swift build -c release
+    - name: Test (Debug)
+      run: swift test -c debug
+
+  app:
+    name: iOS App
+    runs-on: macos-26
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Xcode Version
+      run: xcodebuild -version
+    - name: Build App (iOS Simulator)
+      working-directory: ELinkSmart.swiftpm
+      run: |
+        xcodebuild \
+          -scheme ELinkSmartApp \
+          -destination 'generic/platform=iOS Simulator' \
+          -skipPackagePluginValidation \
+          -skipMacroValidation \
+          build
