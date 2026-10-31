@@ -6,79 +6,71 @@
 //
 
 import Foundation
-import XCTest
+import Testing
 @testable import ELinkSmart
 import Bluetooth
 import GATT
 import BluetoothGAP
 
 /// End-to-end tests of ``ELinkSmartConnection`` against a simulated lock.
-final class ConnectionTests: XCTestCase {
+struct ConnectionTests {
 
-    func testLoginAndUnlock() async throws {
+    @Test func loginAndUnlock() async throws {
         let central = TestCentral()
         let connection = try await central.connect(toLock: central.peripheral)
         try await connection.login()
         // the simulated lock's challenge is DE AD BE EF, little-endian
         let token = await connection.sessionToken
-        XCTAssertEqual(token, 0xEFBEADDE)
-        try await connection.unlock(password: ELinkSmartPassword(rawValue: "123456")!)
-        // first write is the login, then the unlock; each is a single 20-byte packet or fewer
-        XCTAssertGreaterThanOrEqual(central.writes.count, 2)
+        #expect(token == 0xEFBEADDE)
+        try await connection.unlock(password: #require(ELinkSmartPassword(rawValue: "123456")))
+        // first write is the login, then the unlock
+        #expect(central.writes.count >= 2)
         await connection.disconnect()
     }
 
-    func testUnlockLogsInAutomatically() async throws {
+    @Test func unlockLogsInAutomatically() async throws {
         let central = TestCentral()
         let connection = try await central.connect(toLock: central.peripheral)
-        try await connection.unlock(password: ELinkSmartPassword(rawValue: "123456")!)
+        try await connection.unlock(password: #require(ELinkSmartPassword(rawValue: "123456")))
         let token = await connection.sessionToken
-        XCTAssertNotNil(token)
+        #expect(token != nil)
         await connection.disconnect()
     }
 
-    func testWrongPassword() async throws {
+    @Test func wrongPassword() async throws {
         let central = TestCentral()
         let connection = try await central.connect(toLock: central.peripheral)
-        do {
-            // the lock sends no reply to a bad password, so the command times out
-            try await connection.unlock(password: ELinkSmartPassword(rawValue: "000000")!, timeout: 0.3)
-            XCTFail("expected an error")
-        } catch ELinkSmartConnectionError.timeout {
-            // expected
+        let password = try #require(ELinkSmartPassword(rawValue: "000000"))
+        // the lock sends no reply to a bad password, so the command times out
+        await #expect(throws: ELinkSmartConnectionError.timeout) {
+            try await connection.unlock(password: password, timeout: 0.3)
         }
         await connection.disconnect()
     }
 
-    func testBattery() async throws {
+    @Test func battery() async throws {
         let central = TestCentral()
         let connection = try await central.connect(toLock: central.peripheral)
         let level = try await connection.readBattery()
-        XCTAssertEqual(level, 0x42)
+        #expect(level == 0x42)
         await connection.disconnect()
     }
 
-    func testDisconnect() async throws {
+    @Test func disconnect() async throws {
         let central = TestCentral()
         let connection = try await central.connect(toLock: central.peripheral)
         await connection.disconnect()
         let isConnected = await connection.isConnected
-        XCTAssertFalse(isConnected)
-        do {
+        #expect(isConnected == false)
+        await #expect(throws: ELinkSmartConnectionError.disconnected) {
             try await connection.login()
-            XCTFail("expected an error")
-        } catch ELinkSmartConnectionError.disconnected {
-            // expected
         }
     }
 
-    func testConnectTimeout() async throws {
+    @Test func connectTimeout() async throws {
         let central = TestCentral(isAdvertising: false)
-        do {
+        await #expect(throws: ELinkSmartConnectionError.connectionTimeout) {
             _ = try await central.connect(toLock: central.peripheral, connectTimeout: 0.2)
-            XCTFail("expected an error")
-        } catch ELinkSmartConnectionError.connectionTimeout {
-            // expected
         }
     }
 }
