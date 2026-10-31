@@ -29,9 +29,9 @@ Lock-service characteristics:
 | `CHR_DATAOUT` | `0x2ADE` | 0x000a | Notify (`0x10`) — lock → app replies |
 | `CHR_DATAIN2` | `0x2ADF` | 0x000d | Write (`0x08`) — secondary, unused in the capture |
 
-> **No battery service.** There is no `0x180F` on the real unit, so battery level is not a GATT read; the
-> app must obtain it via a command (not yet identified). The library's `readBattery()` therefore does not
-> work against real hardware.
+> **No battery service.** There is no `0x180F` on the real unit, so battery is not a GATT read (the
+> library does not expose a battery API). The login reply carries device info including a `0x64` (= 100)
+> byte that is a likely battery-percent field; decoding it is a future task.
 
 ## Advertisement — Verified
 
