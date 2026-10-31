@@ -150,12 +150,19 @@ private extension ELinkSmartConnection {
             throw ELinkSmartConnectionError.notLoggedIn
         }
         let timestamp = UInt32(truncatingIfNeeded: UInt64(Date().timeIntervalSince1970))
-        let command = ELinkSmartCommand.unlock(token: token, password: password, timestamp: timestamp)
+        let command = ELinkSmartCommand.unlock(proof: proof(for: token), password: password, timestamp: timestamp)
         let response = try await exchange(command.packet, timeout: timeout)
-        // the lock acknowledges by echoing the command code; a wrong password or token gets no reply
+        // the lock acknowledges by echoing the command code; a wrong password or proof gets no reply
         guard response.command == command.packet.command else {
             throw ELinkSmartConnectionError.unlockFailed
         }
+    }
+
+    /// The challenge proof an authenticated command must carry: the first four bytes of the AES-ECB
+    /// encryption of the 4-byte challenge (which the cipher PKCS7-pads to one block).
+    func proof(for challenge: UInt32) -> UInt32 {
+        let encrypted = cipher.encrypt(challenge.littleEndianBytes)
+        return UInt32(littleEndian: (encrypted[0], encrypted[1], encrypted[2], encrypted[3]))
     }
 
     /// Encrypts a packet, writes it to the lock, and decrypts the reply.
