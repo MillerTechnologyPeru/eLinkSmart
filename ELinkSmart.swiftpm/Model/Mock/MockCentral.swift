@@ -120,7 +120,7 @@ public final class MockCentral: CentralManager {
         for peripheral: Peripheral
     ) async throws -> [Service<Peripheral, AttributeID>] {
         try await requireConnected(peripheral)
-        return [.elinkSmart, .battery]
+        return [.elinkSmart]
     }
 
     public func discoverIncludedServices(
@@ -138,8 +138,6 @@ public final class MockCentral: CentralManager {
         switch service.uuid {
         case .elinkSmartService:
             return [.dataIn, .dataOut, .dataIn2]
-        case .batteryService:
-            return [.batteryLevel]
         default:
             return []
         }
@@ -149,7 +147,7 @@ public final class MockCentral: CentralManager {
         for characteristic: Characteristic<Peripheral, AttributeID>
     ) async throws -> Data {
         try await requireConnected(characteristic.peripheral)
-        return characteristic.uuid == .batteryLevel ? Data([0x42]) : Data()
+        return Data()
     }
 
     public func writeValue(
